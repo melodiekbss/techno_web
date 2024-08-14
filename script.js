@@ -11,6 +11,8 @@ const weatherGraph = $("#weather-graph");
 
 const API_KEY = "a58641f830345ed45f5dd3544f09b11d"; // Clé API pour l'API OpenWeatherMap
 
+//const dico = require('./dictionnary_vf')
+
 const getFormattedDate = (dateString) => {
   const days = [
     "Dimanche",

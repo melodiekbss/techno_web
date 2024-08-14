@@ -1,97 +1,105 @@
 <!DOCTYPE html>
 <html lang="fr">
-<head>
-    <meta charset="utf-8">
+  <head>
+    <meta charset="utf-8" />
     <title>Projet d'application Météo - Kubushishi Mélodie</title>
-    <link rel="stylesheet" href="style.css">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <!-- Incluez une seule version de jQuery -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="script.js" defer></script>
-</head>
-<body>
+  </head>
+  <body>
     <h1>Tableau de bord - Météo</h1>
     <div class="container">
-        <div class="weather-input">
-            <h3>Entrez le nom d'une ville</h3>
-            <input class="city-input" type="text" placeholder="Ex : Liège, Paris, Tokyo">
-            <div class="btn-tableau-de-bord">
-                <button class="search-btn">Rechercher</button>
-                <button class="add-btn">Ajouter la ville en favoris</button>
-            </div>
-            
-            <div class="separator"></div>
-            <button class="location-btn">Utiliser la localisation actuelle</button>
+      <div class="weather-input">
+        <h3>Entrez le nom d'une ville</h3>
+        <input
+          class="city-input"
+          type="text"
+          placeholder="Ex : Liège, Paris, Tokyo"
+        />
+        <div class="btn-tableau-de-bord">
+          <button class="search-btn">Rechercher</button>
+          <button class="add-btn">Ajouter la ville en favoris</button>
         </div>
-        
-        <div class="city-table-container">
-            <h3>Liste des villes favorites</h3>
-            <table class="city-table">
-                <thead>
-                    <tr>
-                        <th>Ville</th>
-                        <th>Supprimer</th>
-                    </tr>
-                </thead>
-                <tbody id="city-list">
-                    <!-- Les lignes du tableau sont ajoutées via JavaScript -->
-                </tbody>
-            </table>
-        </div>
+
+        <div class="separator"></div>
+        <button class="location-btn">Utiliser la localisation actuelle</button>
+      </div>
+
+      <div class="city-table-container">
+        <h3>Liste des villes favorites</h3>
+        <table class="city-table">
+          <thead>
+            <tr>
+              <th>Ville</th>
+              <th>Supprimer</th>
+            </tr>
+          </thead>
+          <tbody id="city-list">
+            <!-- Les lignes du tableau sont ajoutées via JavaScript -->
+          </tbody>
+        </table>
+      </div>
     </div>
-        <div class="weather-data">
-            <div class="current-weather">
-                <div class="details">
-                    <h2>_______ ( ______ )</h2>
-                    <h6>Température: __°C</h6>
-                    <h6>Vent: __ M/S</h6>
-                    <h6>Humidité: __%</h6>
-                </div>
-            </div>
-            <div class="days-forecast">
-                <h2>Prévisions sur 5 jours</h2>
-                <ul class="weather-cards">
-                    <li class="card">
-                        <h3>( ______ )</h3>
-                        <h6>Temp: __°C</h6>
-                        <h6>Vent: __ M/S</h6>
-                        <h6>Humidité: __%</h6>
-                    </li>
-                    <li class="card">
-                        <h3>( ______ )</h3>
-                        <h6>Temp: __°C</h6>
-                        <h6>Vent: __ M/S</h6>
-                        <h6>Humidité: __%</h6>
-                    </li>
-                    <li class="card">
-                        <h3>( ______ )</h3>
-                        <h6>Temp: __°C</h6>
-                        <h6>Vent: __ M/S</h6>
-                        <h6>Humidité: __%</h6>
-                    </li>
-                    <li class="card">
-                        <h3>( ______ )</h3>
-                        <h6>Temp: __°C</h6>
-                        <h6>Vent: __ M/S</h6>
-                        <h6>Humidité: __%</h6>
-                    </li>
-                    <li class="card">
-                        <h3>( ______ )</h3>
-                        <h6>Temp: __°C</h6>
-                        <h6>Vent: __ M/S</h6>
-                        <h6>Humidité: __%</h6>
-                    </li>
-                </ul>
-            </div>
+    <div class="weather-data">
+      <div class="current-weather">
+        <div class="details">
+          <h2>_______ ( ______ )</h2>
+          <h6>Température: __°C</h6>
+          <h6>Vent: __ M/S</h6>
+          <h6>Humidité: __%</h6>
         </div>
+      </div>
+      <div class="days-forecast">
+        <h2>Prévisions sur 5 jours</h2>
+        <ul class="weather-cards">
+          <li class="card">
+            <h3>( ______ )</h3>
+            <h6>Temp: __°C</h6>
+            <h6>Vent: __ M/S</h6>
+            <h6>Humidité: __%</h6>
+          </li>
+          <li class="card">
+            <h3>( ______ )</h3>
+            <h6>Temp: __°C</h6>
+            <h6>Vent: __ M/S</h6>
+            <h6>Humidité: __%</h6>
+          </li>
+          <li class="card">
+            <h3>( ______ )</h3>
+            <h6>Temp: __°C</h6>
+            <h6>Vent: __ M/S</h6>
+            <h6>Humidité: __%</h6>
+          </li>
+          <li class="card">
+            <h3>( ______ )</h3>
+            <h6>Temp: __°C</h6>
+            <h6>Vent: __ M/S</h6>
+            <h6>Humidité: __%</h6>
+          </li>
+          <li class="card">
+            <h3>( ______ )</h3>
+            <h6>Temp: __°C</h6>
+            <h6>Vent: __ M/S</h6>
+            <h6>Humidité: __%</h6>
+          </li>
+        </ul>
+      </div>
     </div>
     <footer>
-        <!-- Contenu du footer (ex : informations de contact, crédits) -->
-    <div class="chart-container">
+      <!-- Contenu du footer (ex : informations de contact, crédits) -->
+      <div class="chart-container">
         <div class="chart">
-            <img id="weather-graph" src="" alt="Graphique Météo" style="display: none;"/>
+          <img
+            id="weather-graph"
+            src=""
+            alt="Graphique Météo"
+            style="display: none"
+          />
         </div>
-    </div>
+      </div>
     </footer>
-</body>
+  </body>
 </html>
