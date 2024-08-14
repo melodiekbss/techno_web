@@ -1,20 +1,19 @@
-
 /*Amélioration */
 
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
-  font-family: 'Open Sans', sans-serif;
+  font-family: "Open Sans", sans-serif;
 }
 
 body {
-  background: #1A1A1A;
-  color: #F0F0F0;
+  background: #1a1a1a;
+  color: #f0f0f0;
 }
 
 h1 {
-  background: #2E3B4E;
+  background: #2e3b4e;
   font-size: 1.75rem;
   text-align: center;
   padding: 18px 0;
@@ -29,6 +28,12 @@ h1 {
 
 .weather-input {
   width: 550px;
+}
+
+.btn-tableau-de-bord {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
 
 .weather-input input {
@@ -46,7 +51,7 @@ h1 {
 
 .weather-input input:focus {
   padding: 0 16px;
-  border: 2px solid #2E3B4E;
+  border: 2px solid #2e3b4e;
 }
 
 .weather-input .separator {
@@ -65,7 +70,7 @@ h1 {
   font-size: 1.18rem;
   padding: 0 15px;
   margin-top: -4px;
-  background: #1A1A1A;
+  background: #1a1a1a;
 }
 
 .weather-input button {
@@ -77,12 +82,18 @@ h1 {
   border-radius: 4px;
   font-size: 1rem;
   color: #fff;
-  background: #2E3B4E;
+  background: #2e3b4e;
   transition: 0.2s ease;
 }
-
 .weather-input .search-btn:hover {
-  background: #1C2733;
+  background: #1c2733;
+}
+.weather-input .search-btn {
+  margin-right: 1rem;
+}
+
+.weather-input button:hover {
+  background: #1c2733;
 }
 
 .weather-input .location-btn {
@@ -93,13 +104,61 @@ h1 {
   background: #333;
 }
 
+.city-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+  background-color: #2e3b4e;
+  color: #f0f0f0;
+  border-radius: 5px;
+  overflow: hidden;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.city-table th,
+.city-table td {
+  padding: 12px 15px;
+  text-align: left;
+  border-bottom: 1px solid #444;
+}
+
+.city-table th {
+  background-color: #1c2733;
+  font-weight: 600;
+  font-size: 1rem;
+  color: #fff;
+}
+
+.city-table tr:hover {
+  background-color: #444;
+}
+
+.city-table td {
+  background-color: #2e3b4e;
+  color: #f0f0f0;
+}
+
+.city-table tr:last-child td {
+  border-bottom: none;
+}
+
+.city-table th:first-child,
+.city-table td:first-child {
+  border-left: none;
+}
+
+.city-table th:last-child,
+.city-table td:last-child {
+  border-right: none;
+}
+
 .weather-data {
   width: 100%;
 }
 
 .weather-data .current-weather {
   color: #fff;
-  background: #2E3B4E;
+  background: #2e3b4e;
   border-radius: 5px;
   padding: 20px 70px 20px 20px;
   display: flex;
@@ -227,4 +286,3 @@ h1 {
   height: auto;
   border-radius: 10px;
 }
-
