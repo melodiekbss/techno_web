@@ -52,82 +52,130 @@ const createWeatherCard = (cityName, weatherItem, index) => {
 }
 
 
-const getWeatherDetails = (cityName, latitude, longitude) => {
+const getWeatherDetails = async (cityName, latitude, longitude) => {
     const WEATHER_API_URL = `https://api.openweathermap.org/data/2.5/forecast?lat=${latitude}&lon=${longitude}&appid=${API_KEY}`;
 
-    $.get(WEATHER_API_URL)
-        .done(data => {
-            // Filtrer les prévisions pour obtenir une prévision par jour
-            const uniqueForecastDays = [];
-            const fiveDaysForecast = data.list.filter(forecast => {
-                const forecastDate = new Date(forecast.dt_txt).getDate();
-                if (!uniqueForecastDays.includes(forecastDate)) {
-                    return uniqueForecastDays.push(forecastDate);
-                }
-            });
+    try {
+        // Effectuer la requête API et attendre la réponse
+        const response = await fetch(WEATHER_API_URL);
+        
+        // Vérifier si la réponse est correcte
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
 
-            // Effacer les données météo précédentes
-            cityInput.val("");
-            currentWeatherDiv.empty();
-            weatherCardsDiv.empty();
+        // Convertir la réponse en JSON
+        const data = await response.json();
 
-            // Créer les cartes météo et les ajouter au DOM
-            $.each(fiveDaysForecast, (index, weatherItem) => {
-                const html = createWeatherCard(cityName, weatherItem, index);
-                if (index === 0) {
-                    currentWeatherDiv.append(html);
-                } else {
-                    weatherCardsDiv.append(html);
-                }
-            });        
-        })
-        .fail(() => {
-            alert("Une erreur s'est produite lors de la récupération des prévisions météo !");
+        // Filtrer les prévisions pour obtenir une prévision par jour
+        const uniqueForecastDays = [];
+        const fiveDaysForecast = data.list.filter(forecast => {
+            const forecastDate = new Date(forecast.dt_txt).getDate();
+            if (!uniqueForecastDays.includes(forecastDate)) {
+                return uniqueForecastDays.push(forecastDate);
+            }
         });
+
+        // Effacer les données météo précédentes
+        cityInput.val("");
+        currentWeatherDiv.empty();
+        weatherCardsDiv.empty();
+
+        // Créer les cartes météo et les ajouter au DOM
+        fiveDaysForecast.forEach((weatherItem, index) => {
+            const html = createWeatherCard(cityName, weatherItem, index);
+            if (index === 0) {
+                currentWeatherDiv.append(html);
+            } else {
+                weatherCardsDiv.append(html);
+            }
+        });
+    } catch (error) {
+        // Gérer les erreurs
+        alert("Une erreur s'est produite lors de la récupération des prévisions météo : " + error.message);
+    }
 }
 
 
-const getCityCoordinates = () => {
+
+const getCityCoordinates = async () => {
     const cityName = cityInput.val().trim();
     if (cityName === "") return;
+
     const API_URL = `https://api.openweathermap.org/geo/1.0/direct?q=${cityName}&limit=1&appid=${API_KEY}`;
-    
-    // Obtenir les coordonnées de la ville saisie depuis la réponse de l'API
-    $.get(API_URL)
-        .done(data => {
-            if (!data.length) return alert(`Aucune coordonnée trouvée pour ${cityName}`);
-            const { lat, lon, name } = data[0];
-            getWeatherDetails(name, lat, lon);
-        })
-        .fail(() => {
-            alert("Une erreur s'est produite lors de la récupération des coordonnées !");
-        });
+
+    try {
+        // Effectuer la requête API et attendre la réponse
+        const response = await fetch(API_URL);
+
+        // Vérifier si la réponse est correcte
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+
+        // Convertir la réponse en JSON
+        const data = await response.json();
+
+        // Vérifier si des coordonnées ont été trouvées
+        if (!data.length) {
+            alert(`Aucune coordonnée trouvée pour ${cityName}`);
+            return;
+        }
+
+        // Extraire les coordonnées et appeler la fonction pour obtenir les détails météo
+        const { lat, lon, name } = data[0];
+        getWeatherDetails(name, lat, lon);
+
+    } catch (error) {
+        // Gérer les erreurs
+        alert("Une erreur s'est produite lors de la récupération des coordonnées : " + error.message);
+    }
 }
 
-const getUserCoordinates = () => {
-    navigator.geolocation.getCurrentPosition(
-        position => {
-            const { latitude, longitude } = position.coords; // Obtenir les coordonnées de la localisation de l'utilisateur
-            // Obtenir le nom de la ville à partir des coordonnées en utilisant l'API de géocodage inverse
-            const API_URL = `https://api.openweathermap.org/geo/1.0/reverse?lat=${latitude}&lon=${longitude}&limit=1&appid=${API_KEY}`;
-            $.get(API_URL)
-                .done(data => {
-                    const { name } = data[0];
-                    getWeatherDetails(name, latitude, longitude);
-                })
-                .fail(() => {
-                    alert("Une erreur s'est produite lors de la récupération du nom de la ville !");
-                });
-        },
-        error => { // Afficher une alerte si l'utilisateur refuse la permission de localisation
-            if (error.code === error.PERMISSION_DENIED) {
-                alert("Demande de géolocalisation refusée. Veuillez réinitialiser l'autorisation de localisation pour accorder à nouveau l'accès.");
-            } else {
-                alert("Erreur de demande de géolocalisation. Veuillez réinitialiser l'autorisation de localisation.");
-            }
+
+const getUserCoordinates = async () => {
+    try {
+        // Obtenir les coordonnées de l'utilisateur en utilisant une Promise
+        const position = await new Promise((resolve, reject) => {
+            navigator.geolocation.getCurrentPosition(resolve, reject);
+        });
+
+        const { latitude, longitude } = position.coords;
+
+        // Obtenir le nom de la ville à partir des coordonnées en utilisant l'API de géocodage inverse
+        const API_URL = `https://api.openweathermap.org/geo/1.0/reverse?lat=${latitude}&lon=${longitude}&limit=1&appid=${API_KEY}`;
+        
+        // Effectuer la requête API et attendre la réponse
+        const response = await fetch(API_URL);
+
+        // Vérifier si la réponse est correcte
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
         }
-    );
+
+        // Convertir la réponse en JSON
+        const data = await response.json();
+
+        // Vérifier si des coordonnées ont été trouvées
+        if (!data.length) {
+            alert("Aucun nom de ville trouvé pour vos coordonnées.");
+            return;
+        }
+
+        // Extraire le nom de la ville et appeler la fonction pour obtenir les détails météo
+        const { name } = data[0];
+        getWeatherDetails(name, latitude, longitude);
+
+    } catch (error) {
+        // Gérer les erreurs liées à la géolocalisation et à la requête API
+        if (error.message.includes('PERMISSION_DENIED')) {
+            alert("Demande de géolocalisation refusée. Veuillez réinitialiser l'autorisation de localisation pour accorder à nouveau l'accès.");
+        } else {
+            alert("Erreur lors de la récupération des coordonnées ou des données météo : " + error.message);
+        }
+    }
 }
+
 
 
 
@@ -153,40 +201,50 @@ const getWeatherGraph = (cityName) => {
 }
 
 // Fonction pour charger les données météo par défaut lors du chargement de la page
-const loadDefaultWeather = () => {
-    $.get('/default-weather')
-        .done(data => {
-            if (data && data.list) {
-                // Effacer les données météo précédentes
-                currentWeatherDiv.empty();
-                weatherCardsDiv.empty();
+const loadDefaultWeather = async () => {
+    try {
+        // Effectuer la requête pour obtenir les données météo par défaut
+        const response = await fetch('/default-weather');
 
-                // Filtrer les prévisions pour obtenir une prévision par jour
-                const uniqueForecastDays = [];
-                const fiveDaysForecast = data.list.filter(forecast => {
-                    const forecastDate = new Date(forecast.dt_txt).getDate();
-                    if (!uniqueForecastDays.includes(forecastDate)) {
-                        return uniqueForecastDays.push(forecastDate);
-                    }
-                });
+        // Vérifier si la réponse est correcte
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
 
-                // Créer les cartes météo et les ajouter au DOM
-                $.each(fiveDaysForecast, (index, weatherItem) => {
-                    const html = createWeatherCard(data.city.name, weatherItem, index); // Utiliser le nom de la ville retourné par le serveur
-                    if (index === 0) {
-                        currentWeatherDiv.append(html);
-                    } else {
-                        weatherCardsDiv.append(html);
-                    }
-                });        
+        // Convertir la réponse en JSON
+        const data = await response.json();
 
-                // Afficher le graphique pour la ville par défaut
-                getWeatherGraph(data.city.name); // Appel de la fonction pour obtenir le graphique avec la ville par défaut
-            }
-        })
-        .fail(() => {
-            alert("Une erreur s'est produite lors de la récupération des données météo par défaut.");
-        });
+        if (data && data.list) {
+            // Effacer les données météo précédentes
+            currentWeatherDiv.empty();
+            weatherCardsDiv.empty();
+
+            // Filtrer les prévisions pour obtenir une prévision par jour
+            const uniqueForecastDays = [];
+            const fiveDaysForecast = data.list.filter(forecast => {
+                const forecastDate = new Date(forecast.dt_txt).getDate();
+                if (!uniqueForecastDays.includes(forecastDate)) {
+                    return uniqueForecastDays.push(forecastDate);
+                }
+            });
+
+            // Créer les cartes météo et les ajouter au DOM
+            fiveDaysForecast.forEach((weatherItem, index) => {
+                const html = createWeatherCard(data.city.name, weatherItem, index); // Utiliser le nom de la ville retourné par le serveur
+                if (index === 0) {
+                    currentWeatherDiv.append(html);
+                } else {
+                    weatherCardsDiv.append(html);
+                }
+            });
+
+            // Afficher le graphique pour la ville par défaut
+            await getWeatherGraph(data.city.name); // Appel de la fonction pour obtenir le graphique avec la ville par défaut
+        }
+    } catch (error) {
+        // Gérer les erreurs de récupération des données météo
+        alert("Une erreur s'est produite lors de la récupération des données météo par défaut : " + error.message);
+    }
 }
 
 
