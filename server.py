@@ -37,6 +37,7 @@ def index():
 def javascript():
     return ReadFile('script.js')
 
+
 @app.route('/style.css')
 def css():
     return send_file('style.css')
