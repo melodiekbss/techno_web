@@ -15,7 +15,7 @@ from matplotlib.ticker import MaxNLocator
 app = Flask(__name__)
 
 API_KEY = 'a58641f830345ed45f5dd3544f09b11d'  # Clé API pour OpenWeatherMap
-DEFAULT_CITY = 'Angleur'  # Ville par défaut
+DEFAULT_CITY = 'Liège'  # Ville par défaut
 
 # Fichier pour lire le contenu d'un fichier.
 def ReadFile(path):
