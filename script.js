@@ -1,5 +1,3 @@
-
-
 const cityInput = $(".city-input");
 const searchButton = $(".search-btn");
 const locationButton = $(".location-btn");
@@ -88,14 +86,14 @@ const createWeatherCard = (cityName, weatherItem, index) => {
 const getWeatherDetails = async (cityName, latitude, longitude) => {
   const WEATHER_API_URL = `https://api.openweathermap.org/data/2.5/forecast?lat=${latitude}&lon=${longitude}&appid=${API_KEY}`;
 
-    try {
-        // Effectuer la requête API et attendre la réponse
-        const response = await fetch(WEATHER_API_URL);
-        
-        // Vérifier si la réponse est correcte
-        if (!response.ok) {
-            throw new Error('La réponse du réseau pas correcte.');
-        }
+  try {
+    // Effectuer la requête API et attendre la réponse
+    const response = await fetch(WEATHER_API_URL);
+
+    // Vérifier si la réponse est correcte
+    if (!response.ok) {
+      throw new Error("La réponse du réseau pas correcte.");
+    }
 
     // Convertir la réponse en JSON
     const data = await response.json();
@@ -132,40 +130,36 @@ const getWeatherDetails = async (cityName, latitude, longitude) => {
   }
 };
 
-const getCityCoordinates = async () => {
+const getCityCoordinates = () => {
   const cityName = cityInput.val().trim();
   if (cityName === "") return;
 
   const API_URL = `https://api.openweathermap.org/geo/1.0/direct?q=${cityName}&limit=1&appid=${API_KEY}`;
 
-  try {
-    // Effectuer la requête API et attendre la réponse
-    const response = await fetch(API_URL);
+  $.ajax({
+    url: API_URL,
+    method: "GET",
+    success: (data) => {
+      // Vérifier si des coordonnées ont été trouvées
+      if (data.length === 0) {
+        alert(`Aucune coordonnée trouvée pour ${cityName}`);
+        return;
+      }
 
-        // Vérifier si la réponse est correcte
-        if (!response.ok) {
-            throw new Error('La réponse du réseau pas correcte.');
-        }
-
-    // Convertir la réponse en JSON
-    const data = await response.json();
-
-    // Vérifier si des coordonnées ont été trouvées
-    if (!data.length) {
-      alert(`Aucune coordonnée trouvée pour ${cityName}`);
-      return;
-    }
-
-    // Extraire les coordonnées et appeler la fonction pour obtenir les détails météo
-    const { lat, lon, name } = data[0];
-    getWeatherDetails(name, lat, lon);
-  } catch (error) {
-    // Gérer les erreurs
-    alert(
-      "Une erreur s'est produite lors de la récupération des coordonnées : " +
-        error.message
-    );
-  }
+      // Extraire les coordonnées et appeler la fonction pour obtenir les détails météo
+      const { lat, lon, name } = data[0];
+      getWeatherDetails(name, lat, lon);
+    },
+    error: (jqXHR, textStatus, errorThrown) => {
+      // Gérer les erreurs
+      alert(
+        "Une erreur s'est produite lors de la récupération des coordonnées : " +
+          textStatus +
+          " " +
+          errorThrown
+      );
+    },
+  });
 };
 
 const getUserCoordinates = async () => {
@@ -183,10 +177,10 @@ const getUserCoordinates = async () => {
     // Effectuer la requête API et attendre la réponse
     const response = await fetch(API_URL);
 
-        // Vérifier si la réponse est correcte
-        if (!response.ok) {
-            throw new Error('La réponse du réseau pas correcte.');
-        }
+    // Vérifier si la réponse est correcte
+    if (!response.ok) {
+      throw new Error("La réponse du réseau pas correcte.");
+    }
 
     // Convertir la réponse en JSON
     const data = await response.json();
@@ -215,25 +209,42 @@ const getUserCoordinates = async () => {
   }
 };
 
-//attention pas mettre la méthode getWeatherGraph alors que post methode
-const getWeatherGraph = (cityName) => {
-  $.ajax({
-    url: "/weather-graph",
+const postCityName = (cityName) => {
+  return $.ajax({
+    url: "/weather-data",
     method: "POST",
     contentType: "application/json",
     data: JSON.stringify({ city_name: cityName }),
-    success: (response) => {
-      if (response.image) {
-        weatherGraph.attr("src", `data:image/png;base64,${response.image}`);
-        weatherGraph.show();
-      } else {
-        alert("Aucune donnée disponible pour afficher le graphique.");
-      }
-    },
-    error: () => {
-      alert("Une erreur s'est produite lors de la récupération du graphique.");
-    },
   });
+};
+const getWeatherGraph = (cityName) => {
+  postCityName(cityName)
+    .done((response) => {
+      // Supposons que la réponse contient un identifiant de graphique
+      const graphId = response.graph_id;
+
+      // Maintenant, obtenons le graphique avec une requête GET
+      $.ajax({
+        url: `/weather-graph/${graphId}`,
+        method: "GET",
+        success: (response) => {
+          if (response.image) {
+            weatherGraph.attr("src", `data:image/png;base64,${response.image}`);
+            weatherGraph.show();
+          } else {
+            alert("Aucune donnée disponible pour afficher le graphique.");
+          }
+        },
+        error: () => {
+          alert(
+            "Une erreur s'est produite lors de la récupération du graphique."
+          );
+        },
+      });
+    })
+    .fail(() => {
+      alert("Une erreur s'est produite lors de l'envoi du nom de la ville.");
+    });
 };
 
 // Fonction pour charger les données météo par défaut lors du chargement de la page
@@ -242,10 +253,10 @@ const loadDefaultWeather = async () => {
     // Effectuer la requête pour obtenir les données météo par défaut
     const response = await fetch("/default-weather");
 
-        // Vérifier si la réponse est correcte
-        if (!response.ok) {
-            throw new Error('La réponse du réseau pas correcte.');
-        }
+    // Vérifier si la réponse est correcte
+    if (!response.ok) {
+      throw new Error("La réponse du réseau pas correcte.");
+    }
 
     // Convertir la réponse en JSON
     const data = await response.json();
@@ -307,58 +318,58 @@ $(document).ready(() => {
 });
 
 generateGraphButton.on("click", () => {
-    const cityName = cityInput.val().trim();
-    if (cityName) {
-        getWeatherGraph(cityName);
-    } else {
-        alert("Veuillez entrer le nom d'une ville.");
-    }
-    });
+  const cityName = cityInput.val().trim();
+  if (cityName) {
+    getWeatherGraph(cityName);
+  } else {
+    alert("Veuillez entrer le nom d'une ville.");
+  }
+});
 
 locationButton.on("click", getUserCoordinates);
 searchButton.on("click", getCityCoordinates);
 cityInput.on("keyup", (e) => {
-if (e.key === "Enter") {
+  if (e.key === "Enter") {
     getCityCoordinates();
-}
+  }
 });
 
 document.addEventListener("DOMContentLoaded", function () {
-    const cityList = document.getElementById("city-list");
+  const cityList = document.getElementById("city-list");
 
-    // villes par défaut
-    const defaultCities = ["Liège", "Paris", "Tokyo"];
+  // villes par défaut
+  const defaultCities = ["Liège", "Paris", "Tokyo"];
 
-    // Fonction pour ajouter une ville au tableau
-    function addCityToTable(city) {
-        const row = document.createElement("tr");
+  // Fonction pour ajouter une ville au tableau
+  function addCityToTable(city) {
+    const row = document.createElement("tr");
 
-        const cityCell = document.createElement("td");
-        cityCell.textContent = city;
-        row.appendChild(cityCell);
+    const cityCell = document.createElement("td");
+    cityCell.textContent = city;
+    row.appendChild(cityCell);
 
-        const actionCell = document.createElement("td");
-        const deleteBtn = document.createElement("button");
-        deleteBtn.textContent = "🗑️";
-        deleteBtn.classList.add("delete-btn");
-        deleteBtn.addEventListener("click", () => {
-        row.remove();
-        });
-        actionCell.appendChild(deleteBtn);
-        row.appendChild(actionCell);
+    const actionCell = document.createElement("td");
+    const deleteBtn = document.createElement("button");
+    deleteBtn.textContent = "🗑️";
+    deleteBtn.classList.add("delete-btn");
+    deleteBtn.addEventListener("click", () => {
+      row.remove();
+    });
+    actionCell.appendChild(deleteBtn);
+    row.appendChild(actionCell);
 
-        cityList.appendChild(row);
+    cityList.appendChild(row);
+  }
+
+  // Ajouter les villes par défaut
+  defaultCities.forEach((city) => addCityToTable(city));
+
+  // Exemple d'utilisation : ajouter une ville en cliquant sur "Rechercher"
+  document.querySelector(".add-btn").addEventListener("click", function () {
+    const cityInput = document.querySelector(".city-input").value.trim();
+    if (cityInput) {
+      addCityToTable(cityInput);
+      document.querySelector(".city-input").value = ""; // Clear input field
     }
-
-    // Ajouter les villes par défaut
-    defaultCities.forEach((city) => addCityToTable(city));
-
-    // Exemple d'utilisation : ajouter une ville en cliquant sur "Rechercher"
-    document.querySelector(".add-btn").addEventListener("click", function () {
-        const cityInput = document.querySelector(".city-input").value.trim();
-        if (cityInput) {
-        addCityToTable(cityInput);
-        document.querySelector(".city-input").value = ""; // Clear input field
-        }
-    });
-    });
+  });
+});

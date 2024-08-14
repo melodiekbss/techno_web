@@ -12,7 +12,14 @@ import base64
 import requests
 from matplotlib.ticker import MaxNLocator
 
+import os
+import uuid
+
 app = Flask(__name__)
+
+# Dossier pour stocker les fichiers temporaires
+TEMP_DIR = 'temp_graphs'
+os.makedirs(TEMP_DIR, exist_ok=True)
 
 API_KEY = 'a58641f830345ed45f5dd3544f09b11d'  # Clé API pour OpenWeatherMap
 DEFAULT_CITY = 'Angleur'  # Ville par défaut
@@ -65,13 +72,63 @@ def default_weather():
 
     return jsonify(weather_data)
 
-@app.route('/weather-graph', methods=['POST'])
-def weather_graph():
+@app.route('/weather', methods=['GET'])
+def get_weather():
+    latitude = request.args.get('lat')
+    longitude = request.args.get('lon')
+    
+    if not latitude or not longitude:
+        return jsonify({'error': 'Latitude et longitude sont requis'}), 400
+
+    WEATHER_API_URL = f'https://api.openweathermap.org/data/2.5/forecast?lat={latitude}&lon={longitude}&appid={API_KEY}'
+
+    response = requests.get(WEATHER_API_URL)
+    
+    if response.status_code == 200:
+        return jsonify(response.json())
+    else:
+        return jsonify({'error': 'Erreur lors de la récupération des données météo'}), response.status_code
+
+@app.route('/geocode', methods=['GET'])
+def get_city_coordinates():
+    city_name = request.args.get('q')
+    
+    if not city_name:
+        return jsonify({'error': 'Le nom de la ville est requis'}), 400
+
+    GEO_API_URL = f'https://api.openweathermap.org/geo/1.0/direct?q={city_name}&limit=1&appid={API_KEY}'
+
+    response = requests.get(GEO_API_URL)
+    
+    if response.status_code == 200:
+        return jsonify(response.json())
+    else:
+        return jsonify({'error': 'Erreur lors de la récupération des coordonnées de la ville'}), response.status_code
+
+@app.route('/reverse-geocode', methods=['GET'])
+def reverse_geocode():
+    latitude = request.args.get('lat')
+    longitude = request.args.get('lon')
+    
+    if not latitude or not longitude:
+        return jsonify({'error': 'Latitude et longitude sont requis'}), 400
+
+    REVERSE_GEOCODE_API_URL = f'https://api.openweathermap.org/geo/1.0/reverse?lat={latitude}&lon={longitude}&limit=1&appid={API_KEY}'
+
+    response = requests.get(REVERSE_GEOCODE_API_URL)
+    
+    if response.status_code == 200:
+        return jsonify(response.json())
+    else:
+        return jsonify({'error': 'Erreur lors de la récupération du nom de la ville pour les coordonnées fournies'}), response.status_code
+
+
+@app.route('/weather-data', methods=['POST'])
+def weather_data():
     city_name = request.json.get('city_name')
 
     if not city_name:
         return jsonify({'error': 'City name is required'}), 400
-       
 
     # Obtenez les coordonnées de la ville
     geo_url = f'https://api.openweathermap.org/geo/1.0/direct?q={city_name}&limit=1&appid={API_KEY}'
@@ -114,16 +171,25 @@ def weather_graph():
     plt.xticks(rotation=45)
     plt.tight_layout()
 
-    # Enregistrer le graphique dans un buffer en mémoire
-    img = io.BytesIO()
-    plt.savefig(img, format='png')
+    # Enregistrer le graphique dans un fichier
+    graph_id = str(uuid.uuid4())  # Générer un identifiant unique
+    file_path = os.path.join(TEMP_DIR, f'{graph_id}.png')
+    plt.savefig(file_path)
     plt.close(fig)
-    img.seek(0)
 
-    # Convertir l'image en base64 pour l'envoyer au client
-    img_base64 = base64.b64encode(img.getvalue()).decode('utf-8')
+    return jsonify({'graph_id': graph_id})
 
-    return jsonify({'image': img_base64})
+@app.route('/weather-graph/<graph_id>', methods=['GET'])
+def get_weather_graph(graph_id):
+    file_path = os.path.join(TEMP_DIR, f'{graph_id}.png')
+
+    if os.path.exists(file_path):
+        # Lire le fichier image et le convertir en base64
+        with open(file_path, 'rb') as img_file:
+            img_base64 = base64.b64encode(img_file.read()).decode('utf-8')
+        return jsonify({'image': img_base64})
+    else:
+        return jsonify({'error': 'Graphique non trouvé'}), 404
 
 if __name__ == '__main__':
     app.run(debug = True)
