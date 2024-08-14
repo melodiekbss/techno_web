@@ -1,5 +1,4 @@
-// main.js
-import * as dico from "./dictionnary_vf.js";
+
 
 const cityInput = $(".city-input");
 const searchButton = $(".search-btn");
@@ -87,14 +86,14 @@ const createWeatherCard = (cityName, weatherItem, index) => {
 const getWeatherDetails = async (cityName, latitude, longitude) => {
   const WEATHER_API_URL = `https://api.openweathermap.org/data/2.5/forecast?lat=${latitude}&lon=${longitude}&appid=${API_KEY}`;
 
-  try {
-    // Effectuer la requête API et attendre la réponse
-    const response = await fetch(WEATHER_API_URL);
-
-    // Vérifier si la réponse est correcte
-    if (!response.ok) {
-      throw new Error(dico.errors.networkError);
-    }
+    try {
+        // Effectuer la requête API et attendre la réponse
+        const response = await fetch(WEATHER_API_URL);
+        
+        // Vérifier si la réponse est correcte
+        if (!response.ok) {
+            throw new Error('La réponse du réseau pas correcte.');
+        }
 
     // Convertir la réponse en JSON
     const data = await response.json();
@@ -141,10 +140,10 @@ const getCityCoordinates = async () => {
     // Effectuer la requête API et attendre la réponse
     const response = await fetch(API_URL);
 
-    // Vérifier si la réponse est correcte
-    if (!response.ok) {
-      throw new Error("La réponse du réseau pas correcte.");
-    }
+        // Vérifier si la réponse est correcte
+        if (!response.ok) {
+            throw new Error('La réponse du réseau pas correcte.');
+        }
 
     // Convertir la réponse en JSON
     const data = await response.json();
@@ -182,10 +181,10 @@ const getUserCoordinates = async () => {
     // Effectuer la requête API et attendre la réponse
     const response = await fetch(API_URL);
 
-    // Vérifier si la réponse est correcte
-    if (!response.ok) {
-      throw new Error("La réponse du réseau pas correcte.");
-    }
+        // Vérifier si la réponse est correcte
+        if (!response.ok) {
+            throw new Error('La réponse du réseau pas correcte.');
+        }
 
     // Convertir la réponse en JSON
     const data = await response.json();
@@ -241,10 +240,10 @@ const loadDefaultWeather = async () => {
     // Effectuer la requête pour obtenir les données météo par défaut
     const response = await fetch("/default-weather");
 
-    // Vérifier si la réponse est correcte
-    if (!response.ok) {
-      throw new Error("La réponse du réseau pas correcte.");
-    }
+        // Vérifier si la réponse est correcte
+        if (!response.ok) {
+            throw new Error('La réponse du réseau pas correcte.');
+        }
 
     // Convertir la réponse en JSON
     const data = await response.json();
@@ -306,58 +305,58 @@ $(document).ready(() => {
 });
 
 generateGraphButton.on("click", () => {
-  const cityName = cityInput.val().trim();
-  if (cityName) {
-    getWeatherGraph(cityName);
-  } else {
-    alert("Veuillez entrer le nom d'une ville.");
-  }
-});
+    const cityName = cityInput.val().trim();
+    if (cityName) {
+        getWeatherGraph(cityName);
+    } else {
+        alert("Veuillez entrer le nom d'une ville.");
+    }
+    });
 
 locationButton.on("click", getUserCoordinates);
 searchButton.on("click", getCityCoordinates);
 cityInput.on("keyup", (e) => {
-  if (e.key === "Enter") {
+if (e.key === "Enter") {
     getCityCoordinates();
-  }
+}
 });
 
 document.addEventListener("DOMContentLoaded", function () {
-  const cityList = document.getElementById("city-list");
+    const cityList = document.getElementById("city-list");
 
-  // villes par défaut
-  const defaultCities = ["Liège", "Paris", "Tokyo"];
+    // villes par défaut
+    const defaultCities = ["Liège", "Paris", "Tokyo"];
 
-  // Fonction pour ajouter une ville au tableau
-  function addCityToTable(city) {
-    const row = document.createElement("tr");
+    // Fonction pour ajouter une ville au tableau
+    function addCityToTable(city) {
+        const row = document.createElement("tr");
 
-    const cityCell = document.createElement("td");
-    cityCell.textContent = city;
-    row.appendChild(cityCell);
+        const cityCell = document.createElement("td");
+        cityCell.textContent = city;
+        row.appendChild(cityCell);
 
-    const actionCell = document.createElement("td");
-    const deleteBtn = document.createElement("button");
-    deleteBtn.textContent = "🗑️";
-    deleteBtn.classList.add("delete-btn");
-    deleteBtn.addEventListener("click", () => {
-      row.remove();
-    });
-    actionCell.appendChild(deleteBtn);
-    row.appendChild(actionCell);
+        const actionCell = document.createElement("td");
+        const deleteBtn = document.createElement("button");
+        deleteBtn.textContent = "🗑️";
+        deleteBtn.classList.add("delete-btn");
+        deleteBtn.addEventListener("click", () => {
+        row.remove();
+        });
+        actionCell.appendChild(deleteBtn);
+        row.appendChild(actionCell);
 
-    cityList.appendChild(row);
-  }
-
-  // Ajouter les villes par défaut
-  defaultCities.forEach((city) => addCityToTable(city));
-
-  // Exemple d'utilisation : ajouter une ville en cliquant sur "Rechercher"
-  document.querySelector(".add-btn").addEventListener("click", function () {
-    const cityInput = document.querySelector(".city-input").value.trim();
-    if (cityInput) {
-      addCityToTable(cityInput);
-      document.querySelector(".city-input").value = ""; // Clear input field
+        cityList.appendChild(row);
     }
-  });
-});
+
+    // Ajouter les villes par défaut
+    defaultCities.forEach((city) => addCityToTable(city));
+
+    // Exemple d'utilisation : ajouter une ville en cliquant sur "Rechercher"
+    document.querySelector(".add-btn").addEventListener("click", function () {
+        const cityInput = document.querySelector(".city-input").value.trim();
+        if (cityInput) {
+        addCityToTable(cityInput);
+        document.querySelector(".city-input").value = ""; // Clear input field
+        }
+    });
+    });
