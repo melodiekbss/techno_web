@@ -1,3 +1,5 @@
+
+
 const cityInput = $(".city-input");
 const searchButton = $(".search-btn");
 const locationButton = $(".location-btn");
@@ -61,7 +63,7 @@ const getWeatherDetails = async (cityName, latitude, longitude) => {
         
         // Vérifier si la réponse est correcte
         if (!response.ok) {
-            throw new Error('Network response was not ok');
+            throw new Error('La réponse du réseau pas correcte.');
         }
 
         // Convertir la réponse en JSON
@@ -110,7 +112,7 @@ const getCityCoordinates = async () => {
 
         // Vérifier si la réponse est correcte
         if (!response.ok) {
-            throw new Error('Network response was not ok');
+            throw new Error('La réponse du réseau pas correcte.');
         }
 
         // Convertir la réponse en JSON
@@ -150,7 +152,7 @@ const getUserCoordinates = async () => {
 
         // Vérifier si la réponse est correcte
         if (!response.ok) {
-            throw new Error('Network response was not ok');
+            throw new Error('La réponse du réseau pas correcte.');
         }
 
         // Convertir la réponse en JSON
@@ -208,7 +210,7 @@ const loadDefaultWeather = async () => {
 
         // Vérifier si la réponse est correcte
         if (!response.ok) {
-            throw new Error('Network response was not ok');
+            throw new Error('La réponse du réseau pas correcte.');
         }
 
         // Convertir la réponse en JSON
