@@ -15,11 +15,29 @@
         <div class="weather-input">
             <h3>Entrez le nom d'une ville</h3>
             <input class="city-input" type="text" placeholder="Ex : Liège, Paris, Tokyo">
-            <button class="search-btn">Rechercher</button>
+            <div class="btn-tableau-de-bord">
+                <button class="search-btn">Rechercher</button>
+                <button class="add-btn">Ajouter la ville en favoris</button>
+            </div>
+            
             <div class="separator"></div>
             <button class="location-btn">Utiliser la localisation actuelle</button>
         </div>
-      
+        
+        <div class="city-table-container">
+            <h3>Liste des villes favorites</h3>
+            <table class="city-table">
+                <thead>
+                    <tr>
+                        <th>Ville</th>
+                        <th>Supprimer</th>
+                    </tr>
+                </thead>
+                <tbody id="city-list">
+                    <!-- Les lignes du tableau sont ajoutées via JavaScript -->
+                </tbody>
+            </table>
+        </div>
     </div>
         <div class="weather-data">
             <div class="current-weather">
@@ -69,11 +87,11 @@
     </div>
     <footer>
         <!-- Contenu du footer (ex : informations de contact, crédits) -->
-      <div class="chart-container">
-          <div class="chart">
-              <img id="weather-graph" src="" alt="Graphique Météo" style="display: none;"/>
-          </div>
-      </div>
+    <div class="chart-container">
+        <div class="chart">
+            <img id="weather-graph" src="" alt="Graphique Météo" style="display: none;"/>
+        </div>
+    </div>
     </footer>
 </body>
 </html>
