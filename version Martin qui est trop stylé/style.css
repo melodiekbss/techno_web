@@ -30,12 +30,6 @@ h1 {
   width: 550px;
 }
 
-.btn-tableau-de-bord {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
 .weather-input input {
   height: 46px;
   width: 100%;

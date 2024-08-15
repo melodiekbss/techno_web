@@ -3,14 +3,13 @@ const searchButton = $(".search-btn");
 const locationButton = $(".location-btn");
 const currentWeatherDiv = $(".current-weather");
 const weatherCardsDiv = $(".weather-cards");
-
 const generateGraphButton = $(".search-btn");
 const weatherGraph = $("#weather-graph");
 
 const API_KEY = "a58641f830345ed45f5dd3544f09b11d"; // Clé API pour l'API OpenWeatherMap
+// https://api.openweathermap.org/data/2.5/forecast?lat=50.59324&lon=5.867828&appid=a58641f830345ed45f5dd3544f09b11d
 
-//const dico = require('./dictionnary_vf')
-
+// avoir une date formatée
 const getFormattedDate = (dateString) => {
   const days = [
     "Dimanche",
@@ -47,6 +46,7 @@ const getFormattedDate = (dateString) => {
   )}-${year}`;
 };
 
+// rendu carte mateo principale
 const createWeatherCard = (cityName, weatherItem, index) => {
   const date = weatherItem.dt_txt.split(" ")[0]; // Date au format 'YYYY-MM-DD'
   const formattedDate = getFormattedDate(weatherItem.dt_txt); // Date formatée avec jour de la semaine
@@ -83,6 +83,37 @@ const createWeatherCard = (cityName, weatherItem, index) => {
   }
 };
 
+const traitementData = (data) => {
+
+  const dataToUse = data.list
+  console.log(dataToUse)
+
+
+  const uniqueForecastDays = [];
+  const fiveDaysForecast = data.list.filter((forecast) => {
+    const forecastDate = new Date(forecast.dt_txt).getDate();
+    if (!uniqueForecastDays.includes(forecastDate)) {
+      return uniqueForecastDays.push(forecastDate);
+    }
+  });
+
+  // Effacer les données météo précédentes
+  cityInput.val("");
+  currentWeatherDiv.empty();
+  weatherCardsDiv.empty();
+
+  // Créer les cartes météo et les ajouter au DOM
+  fiveDaysForecast.forEach((weatherItem, index) => {
+    const html = createWeatherCard(cityName, weatherItem, index);
+    if (index === 0) {
+      currentWeatherDiv.append(html);
+    } else {
+      weatherCardsDiv.append(html);
+    }
+  })
+}
+
+// rendu des sous cartes méteo
 const getWeatherDetails = async (cityName, latitude, longitude) => {
   const WEATHER_API_URL = `https://api.openweathermap.org/data/2.5/forecast?lat=${latitude}&lon=${longitude}&appid=${API_KEY}`;
 
@@ -130,6 +161,7 @@ const getWeatherDetails = async (cityName, latitude, longitude) => {
   }
 };
 
+// Obtenir lattitude et longitude de la ville fournie par l'utilisateur
 const getCityCoordinates = () => {
   const cityName = cityInput.val().trim();
   if (cityName === "") return;
@@ -162,6 +194,7 @@ const getCityCoordinates = () => {
   });
 };
 
+// Obtient les coordonnées depuis le navigateur
 const getUserCoordinates = async () => {
   try {
     // Obtenir les coordonnées de l'utilisateur en utilisant une Promise
@@ -209,14 +242,37 @@ const getUserCoordinates = async () => {
   }
 };
 
-const postCityName = (cityName) => {
+// Post City Name
+const sendCityName = (cityName) => {
   return $.ajax({
-    url: "/weather-data",
-    method: "POST",
-    contentType: "application/json",
-    data: JSON.stringify({ city_name: cityName }),
+      url: "/city", 
+      type: 'POST', 
+      contentType: 'application/json', 
+      data: JSON.stringify({ city_name: cityName }),
+      success: function(response) {
+          console.log("Response:", response);
+      },
+      error: function(xhr, status, error) {
+          console.error("Error:", status, error);
+      }
   });
-};
+}
+
+// Get Weather data brut
+const getWeatherDataBrut = () => {
+  return $.ajax({
+      url: "/weather", 
+      type: 'GET', 
+      success: function(response) {
+          console.log("Response:", response);
+      },
+      error: function(xhr, status, error) {
+          console.error("Error:", status, error);
+      }
+  });
+}
+
+// Get le graphique des previsions sur les 5 jours
 const getWeatherGraph = (cityName) => {
   postCityName(cityName)
     .done((response) => {
@@ -299,9 +355,8 @@ const loadDefaultWeather = async () => {
 
 // Appels des fonctions pour initialiser la page
 $(document).ready(() => {
-  loadDefaultWeather();
+  
   generateGraphButton.on("click", () => {
-    const cityName = cityInput.val().trim();
     if (cityName) {
       getWeatherGraph(cityName);
     } else {
@@ -320,6 +375,9 @@ $(document).ready(() => {
 generateGraphButton.on("click", () => {
   const cityName = cityInput.val().trim();
   if (cityName) {
+    sendCityName(cityName)
+    data = getWeatherDataBrut()
+    traitementData(data)
     getWeatherGraph(cityName);
   } else {
     alert("Veuillez entrer le nom d'une ville.");
@@ -334,42 +392,3 @@ cityInput.on("keyup", (e) => {
   }
 });
 
-document.addEventListener("DOMContentLoaded", function () {
-  const cityList = document.getElementById("city-list");
-
-  // villes par défaut
-  const defaultCities = ["Liège", "Paris", "Tokyo"];
-
-  // Fonction pour ajouter une ville au tableau
-  function addCityToTable(city) {
-    const row = document.createElement("tr");
-
-    const cityCell = document.createElement("td");
-    cityCell.textContent = city;
-    row.appendChild(cityCell);
-
-    const actionCell = document.createElement("td");
-    const deleteBtn = document.createElement("button");
-    deleteBtn.textContent = "🗑️";
-    deleteBtn.classList.add("delete-btn");
-    deleteBtn.addEventListener("click", () => {
-      row.remove();
-    });
-    actionCell.appendChild(deleteBtn);
-    row.appendChild(actionCell);
-
-    cityList.appendChild(row);
-  }
-
-  // Ajouter les villes par défaut
-  defaultCities.forEach((city) => addCityToTable(city));
-
-  // Exemple d'utilisation : ajouter une ville en cliquant sur "Rechercher"
-  document.querySelector(".add-btn").addEventListener("click", function () {
-    const cityInput = document.querySelector(".city-input").value.trim();
-    if (cityInput) {
-      addCityToTable(cityInput);
-      document.querySelector(".city-input").value = ""; // Clear input field
-    }
-  });
-});
