@@ -13,17 +13,13 @@ from matplotlib.ticker import MaxNLocator
 import os
 import uuid
 import json
+from collections import defaultdict
+from datetime import datetime
 
 app = Flask(__name__)
 
-# https://api.openweathermap.org/geo/1.0/direct?q={CITY_NAME}&limit=1&appid={API_KEY}
-
-# Dossier pour stocker les fichiers temporaires
-TEMP_DIR = 'temp_graphs'
-os.makedirs(TEMP_DIR, exist_ok=True)
 
 API_KEY = 'a58641f830345ed45f5dd3544f09b11d'  # Clé API pour OpenWeatherMap
-DEFAULT_CITY = 'Angleur'  # Ville par défaut    
 CITY_INFO = {
     "name": None,
     "lat": None,
@@ -49,15 +45,89 @@ def get_weather_from_coords(lat, lon):
     response = requests.get(weather_url)
     return response.json()
 
-# Fonction pour générer un graphique météo
-def generate_weather_graph(city_name):
-    geo_data = get_city_coordinates_from_name(city_name)
-    if not geo_data:
-        return None, 'City not found'
+# Fonction pour parser les data recu de l'API
+def process_weather_data(data):
+    daily_data = defaultdict(lambda: {
+        "max_temp": float('-inf'),
+        "min_temp": float('inf'),
+        "total_temp": 0,
+        "count_temp": 0,
+        "max_wind_speed": float('-inf'),
+        "avg_wind_speed": 0,
+        "total_wind_speed": 0,
+        "count_wind_speed": 0,
+        "max_humidity": float('-inf'),
+        "min_humidity": float('inf'),
+        "total_humidity": 0,
+        "count_humidity": 0,
+        "weather_icons": defaultdict(int)
+    })
 
-    lat = geo_data[0]['lat']
-    lon = geo_data[0]['lon']
-    weather_data = get_weather_from_coords(lat, lon)
+    for entry in data:
+        date_str = entry['dt_txt'].split(' ')[0]
+        date = datetime.strptime(date_str, "%Y-%m-%d").date()
+        daily = daily_data[date]
+
+        # Températures
+        temp = entry['main']['temp']
+        daily["max_temp"] = max(daily["max_temp"], entry['main']['temp_max'])
+        daily["min_temp"] = min(daily["min_temp"], entry['main']['temp_min'])
+        daily["total_temp"] += temp
+        daily["count_temp"] += 1
+
+        # Vitesse du vent
+        wind_speed = entry['wind']['speed']
+        daily["max_wind_speed"] = max(daily["max_wind_speed"], wind_speed)
+        daily["total_wind_speed"] += wind_speed
+        daily["count_wind_speed"] += 1
+
+        # Humidité
+        humidity = entry['main']['humidity']
+        daily["max_humidity"] = max(daily["max_humidity"], humidity)
+        daily["min_humidity"] = min(daily["min_humidity"], humidity)
+        daily["total_humidity"] += humidity
+        daily["count_humidity"] += 1
+
+        # Météo
+        icon = entry['weather'][0]['icon']
+        daily["weather_icons"][icon] += 1
+
+    # Calculer les moyennes et déterminer le logo le plus fréquent
+    result = []
+    for date, values in daily_data.items():
+        most_frequent_icon = max(values["weather_icons"], key=values["weather_icons"].get, default="01d")
+        result.append({
+            "date": date.strftime("%Y-%m-%d"),
+            "max_temp": round(values["max_temp"] - 273.15, 2) if values["max_temp"] != float('-inf') else None,  
+            "min_temp": round(values["min_temp"] - 273.15, 2) if values["min_temp"] != float('inf') else None,    
+            "avg_temp": round((values["total_temp"] / values["count_temp"]) - 273.15, 2) if values["count_temp"] > 0 else None, 
+            "max_wind_speed": round(values["max_wind_speed"], 2) if values["max_wind_speed"] != float('-inf') else None,  
+            "avg_wind_speed": round(values["total_wind_speed"] / values["count_wind_speed"], 2) if values["count_wind_speed"] > 0 else None, 
+            "max_humidity": round(values["max_humidity"], 2) if values["max_humidity"] != float('-inf') else None, 
+            "min_humidity": round(values["min_humidity"], 2) if values["min_humidity"] != float('inf') else None, 
+            "avg_humidity": round(values["total_humidity"] / values["count_humidity"], 2) if values["count_humidity"] > 0 else None,  
+            "weather_icon": most_frequent_icon
+        })
+
+
+    return result
+
+# Fonction pour générer un graphique météo
+GRAPHICS_DIR = 'static/graphs'
+def generate_weather_graph(city_name):
+    # Assurer que le répertoire pour les graphiques existe
+    if not os.path.exists(GRAPHICS_DIR):
+        os.makedirs(GRAPHICS_DIR)
+
+    # Supprimer les anciens fichiers graphiques pour éviter l'encombrement
+    for filename in os.listdir(GRAPHICS_DIR):
+        file_path = os.path.join(GRAPHICS_DIR, filename)
+        if os.path.isfile(file_path):
+            os.remove(file_path)
+
+    latitude = CITY_INFO['lat']
+    longitude = CITY_INFO['lon']
+    weather_data = get_weather_from_coords(latitude, longitude)
 
     dates = []
     temps = []
@@ -79,12 +149,13 @@ def generate_weather_graph(city_name):
     plt.xticks(rotation=45)
     plt.tight_layout()
 
-    graph_id = str(uuid.uuid4())
-    file_path = os.path.join(TEMP_DIR, f'{graph_id}.png')
-    plt.savefig(file_path)
+    # Générer un nom unique pour le fichier
+    graph_filename = f'{uuid.uuid4()}.png'
+    graph_path = os.path.join(GRAPHICS_DIR, graph_filename)
+    plt.savefig(graph_path)
     plt.close(fig)
 
-    return graph_id, None
+    return graph_filename
 
 # Routes pour les fichiers statiques
 @app.route('/')
@@ -93,15 +164,19 @@ def redirection():
 
 @app.route('/index.html')
 def index():
-    return read_file('index.html')
+    return send_file('index.html')
 
 @app.route('/script.js')
 def javascript():
-    return read_file('script.js')
+    return send_file('script.js', mimetype='text/javascript')
+
+@app.route('/dictionnary_vf.js')
+def dictionary_vf_js():
+    return send_file('dictionnary_vf.js', mimetype='text/javascript')
 
 @app.route('/style.css')
 def css():
-    return send_file('style.css')
+    return send_file('style.css', mimetype='text/css')
 
 # Route pour obtenir les données météo pour une ville par défaut
 @app.route('/city', methods=['POST'])
@@ -136,8 +211,7 @@ def post_city():
     else:
         return jsonify({'error': 'No city name provided'}), 400
 
-@app.route('/default-weather', methods=['GET'])
-def default_weather():
+
     city_name = DEFAULT_CITY
     geo_data = get_city_coordinates_from_name(city_name)
     if not geo_data:
@@ -147,6 +221,39 @@ def default_weather():
     lon = geo_data[0]['lon']
     weather_data = get_weather_from_coords(lat, lon)
     return jsonify(weather_data)
+
+@app.route('/coordinate', methods=['POST'])
+def post_coordinate():
+    global CITY_INFO
+    data = request.json  # On récupère les données JSON de la requête POST
+
+    if 'latitude' in data and 'longitude' in data:
+        latitude = data['latitude']
+        longitude = data['longitude']
+
+        # Envoi de la requête à l'API OpenWeather pour obtenir le nom de la ville
+        coord_url = f'https://api.openweathermap.org/geo/1.0/reverse?lat={latitude}&lon={longitude}&limit=1&appid={API_KEY}'
+        response = requests.get(coord_url)
+
+        if response.status_code == 200:
+            city_data = response.json()  # Conversion de la réponse JSON en un objet Python (liste)
+
+            if city_data:  # Vérifier si la liste n'est pas vide
+                CITY_INFO = {
+                    "name": city_data[0]["name"],
+                    "lat": latitude,
+                    "lon": longitude
+                }
+
+                print(CITY_INFO)
+                print("City information stored:", CITY_INFO)
+                return jsonify({'message': 'City information received', 'city': CITY_INFO['name']}), 200
+            else:
+                return jsonify({'error': 'No city data found'}), 404
+        else:
+            return jsonify({'error': 'Failed to retrieve city data'}), response.status_code
+    else:
+        return jsonify({'error': 'Invalid coordinates provided'}), 400
 
 @app.route('/weather', methods=['GET'])
 def get_weather():
@@ -161,61 +268,32 @@ def get_weather():
 
     # Appeler la fonction pour obtenir les données météo avec les coordonnées
     weather_data = get_weather_from_coords(latitude, longitude)
+
+    # Traiter les données pour en extraire un json par journée
+    processed_data = process_weather_data(weather_data['list'])
+
+    # Exporter en JSON
+    with open('daily_weather_summary.json', 'w') as f:
+        json.dump(processed_data, f, indent=4)
     
-    return jsonify(weather_data)
+    return jsonify(processed_data)
 
+@app.route('/weather_graph', methods=['GET'])
+def get_weather_graph_data():
+    try:
+        global CITY_INFO
 
-@app.route('/geocode', methods=['GET'])
-def get_city_coordinates():
-    city_name = request.args.get('q')
+        if CITY_INFO['name'] is None or CITY_INFO['lat'] is None or CITY_INFO['lon'] is None:
+            return jsonify({'error': 'City information is not set'}), 400
+
+        city_name = CITY_INFO['name']
+        graph_filename = generate_weather_graph(city_name)
+
+        # Renvoie le fichier PNG généré
+        return send_from_directory(GRAPHICS_DIR, graph_filename, mimetype='image/png')
     
-    if not city_name:
-        return jsonify({'error': 'Le nom de la ville est requis'}), 400
-
-    geo_data = get_city_coordinates_from_name(city_name)
-    if not geo_data:
-        return jsonify({'error': 'Erreur lors de la récupération des coordonnées de la ville'}), 500
-
-    return jsonify(geo_data)
-
-@app.route('/reverse-geocode', methods=['GET'])
-def reverse_geocode():
-    latitude = request.args.get('lat')
-    longitude = request.args.get('lon')
-    
-    if not latitude or not longitude:
-        return jsonify({'error': 'Latitude et longitude sont requis'}), 400
-
-    reverse_geo_url = f'https://api.openweathermap.org/geo/1.0/reverse?lat={latitude}&lon={longitude}&limit=1&appid={API_KEY}'
-    response = requests.get(reverse_geo_url)
-    
-    if response.status_code == 200:
-        return jsonify(response.json())
-    else:
-        return jsonify({'error': 'Erreur lors de la récupération du nom de la ville pour les coordonnées fournies'}), response.status_code
-
-@app.route('/weather-data', methods=['POST'])
-def weather_data():
-    city_name = request.json.get('city_name')
-    if not city_name:
-        return jsonify({'error': 'City name is required'}), 400
-
-    graph_id, error = generate_weather_graph(city_name)
-    if error:
-        return jsonify({'error': error}), 404
-
-    return jsonify({'graph_id': graph_id})
-
-@app.route('/weather-graph/<graph_id>', methods=['GET'])
-def get_weather_graph(graph_id):
-    file_path = os.path.join(TEMP_DIR, f'{graph_id}.png')
-
-    if os.path.exists(file_path):
-        with open(file_path, 'rb') as img_file:
-            img_base64 = base64.b64encode(img_file.read()).decode('utf-8')
-        return jsonify({'image': img_base64})
-    else:
-        return jsonify({'error': 'Graphique non trouvé'}), 404
+    except Exception as e:
+        return jsonify({'error': f'Une erreur s\'est produite: {str(e)}'}), 500
 
 if __name__ == '__main__':
     app.run(debug=True)

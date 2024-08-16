@@ -1,0 +1,74 @@
+[
+    {
+        "date": "2024-08-16",
+        "max_temp": 21.21,
+        "min_temp": 17.84,
+        "avg_temp": 19.5,
+        "max_wind_speed": 3.23,
+        "avg_wind_speed": 3.01,
+        "max_humidity": 96,
+        "min_humidity": 81,
+        "avg_humidity": 89.33,
+        "weather_icon": "10d"
+    },
+    {
+        "date": "2024-08-17",
+        "max_temp": 23.82,
+        "min_temp": 16.74,
+        "avg_temp": 19.65,
+        "max_wind_speed": 4.26,
+        "avg_wind_speed": 2.6,
+        "max_humidity": 98,
+        "min_humidity": 58,
+        "avg_humidity": 81.88,
+        "weather_icon": "04d"
+    },
+    {
+        "date": "2024-08-18",
+        "max_temp": 20.74,
+        "min_temp": 12.96,
+        "avg_temp": 16.76,
+        "max_wind_speed": 4.91,
+        "avg_wind_speed": 3.14,
+        "max_humidity": 97,
+        "min_humidity": 60,
+        "avg_humidity": 78.25,
+        "weather_icon": "04d"
+    },
+    {
+        "date": "2024-08-19",
+        "max_temp": 22.62,
+        "min_temp": 11.09,
+        "avg_temp": 16.65,
+        "max_wind_speed": 2.76,
+        "avg_wind_speed": 1.76,
+        "max_humidity": 85,
+        "min_humidity": 48,
+        "avg_humidity": 69.62,
+        "weather_icon": "03d"
+    },
+    {
+        "date": "2024-08-20",
+        "max_temp": 23.44,
+        "min_temp": 13.13,
+        "avg_temp": 17.86,
+        "max_wind_speed": 6.75,
+        "avg_wind_speed": 4.23,
+        "max_humidity": 97,
+        "min_humidity": 55,
+        "avg_humidity": 74.0,
+        "weather_icon": "04d"
+    },
+    {
+        "date": "2024-08-21",
+        "max_temp": 18.95,
+        "min_temp": 11.53,
+        "avg_temp": 14.72,
+        "max_wind_speed": 4.99,
+        "avg_wind_speed": 4.51,
+        "max_humidity": 95,
+        "min_humidity": 54,
+        "avg_humidity": 79.6,
+        "weather_icon": "04d"
+    }
+]

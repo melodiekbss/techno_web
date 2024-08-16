@@ -7,7 +7,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <!-- Incluez une seule version de jQuery -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="script.js" defer></script>
+    <script src="script.js" type="module"></script>
   </head>
   <body>
     <h1>Tableau de bord - Météo</h1>
@@ -19,10 +19,7 @@
           type="text"
           placeholder="Ex : Liège, Paris, Tokyo"
         />
-        <div class="btn-tableau-de-bord">
-          <button class="search-btn">Rechercher</button>
-          <button class="add-btn">Ajouter la ville en favoris</button>
-        </div>
+        <button class="search-btn">Rechercher</button>
 
         <div class="separator"></div>
         <button class="location-btn">Utiliser la localisation actuelle</button>
